@@ -1,0 +1,142 @@
+﻿<UserControl x:Class="HelpDeskWpf.TicketsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:HelpDeskWpf"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <!-- Верхняя панель -->
+            <RowDefinition Height="*"/>
+            <!-- Таблица -->
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Верхняя панель с кнопкой "Обновить" -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="10">
+            
+            <Button Content="Создать заявку" Click="BtnCreate_Click" Margin="10,5,5,5"/>
+           
+            <!--выпадающий список статусов-->
+            <TextBlock Text="Статус" VerticalAlignment="Center" Margin="15,0,5,0"/>
+
+            <ComboBox 
+                   ItemsSource="{Binding StatusList}" 
+                   SelectedItem="{Binding SelectedStatus, UpdateSourceTrigger=PropertyChanged}" 
+                   Width="120" VerticalContentAlignment="Center"/>
+
+
+            <TextBlock Text="Поиск" VerticalAlignment="Center" Margin="15,0,5,0"/>
+            <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"                 
+                 Width="200" VerticalContentAlignment="Center" Padding="5"/>
+        </StackPanel>
+
+        <!-- Таблица -->
+        <DataGrid Grid.Row="1" Margin="10" 
+               ItemsSource="{Binding Tickets}" 
+               AutoGenerateColumns="False" 
+               IsReadOnly="True"
+               RowHeaderWidth="0"
+   
+               SelectionMode="Single"
+               MouseDoubleClick="DataGrid_MouseDoubleClick"
+               x:Name="dataGridTickets"
+               
+               Background="#1E1E1E"
+               Foreground="#E0E0E0"
+               RowBackground="#1E1E1E"
+               AlternatingRowBackground="#252526"
+               HorizontalGridLinesBrush="#3E3E42"
+               VerticalGridLinesBrush="#3E3E42"
+               BorderBrush="#3E3E42">
+
+            <DataGrid.Columns>
+                <DataGridTemplateColumn Header="Тема" Width="*" MinWidth="150" >
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <!-- TextTrimming="CharacterEllipsis" добавляет троеточие, если текст не влезает -->
+                            <TextBlock Text="{Binding Title}" 
+                                       ToolTip="{Binding Description}" 
+                                       TextTrimming="CharacterEllipsis" 
+                                       VerticalAlignment="Center" Margin="5,0,0,0"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <!-- Обрати внимание: биндимся к свойству Name внутри объекта Status -->
+                <DataGridTextColumn Header="Статус" 
+                                    Binding="{Binding Status.Name}" 
+                                    Width="100" 
+                                    SortMemberPath="Status.Name"/>
+
+                <!-- Биндимся к Fullname внутри Author -->
+                <DataGridTextColumn Header="Автор" 
+                                    Binding="{Binding Author.Fullname}" 
+                                    Width="130"/>
+                <DataGridTextColumn Header="Исполнитель" 
+                                    Binding="{Binding Assignee.Fullname}" 
+                                    Width="100" 
+                                    SortMemberPath="Assignee.Fullname"/>
+                <DataGridTextColumn Header="Дата" 
+                                    Binding="{Binding CreateDate}" 
+                                    Width="110"/>
+
+                <DataGridTextColumn Header="Приоритет" 
+                                    Binding="{Binding Priority}" 
+                                    Width="80"/>
+                <!--колонка с кнопкой-->
+                <DataGridTemplateColumn Header="Действия" Width="240" CanUserSort="False">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <!-- Кнопка "В работу" (синяя) -->
+                                <Button Content="В работу" 
+                                     Command="{Binding DataContext.TakeToWorkCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                     CommandParameter="{Binding}"
+                                     Background="#0078D7" Foreground="White" Margin="2" Padding="5">
+                                    <Button.Style>
+                                        <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Status.Name}" Value="В работе">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Status.Name}" Value="Решена">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+                                <!-- НОВАЯ Кнопка "Решена" (зеленая) -->
+                                <Button Content="Решена" 
+                                     Command="{Binding DataContext.ResolveTicketCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                     CommandParameter="{Binding}"
+                                     Background="#4CAF50" Foreground="White" Margin="2" Padding="5">
+                                    <Button.Style>
+                                        <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                                            <Style.Triggers>
+                                                <!-- Прячем, если уже решена -->
+                                                <DataTrigger Binding="{Binding Status.Name}" Value="Решена">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+
+                                <Button Content="Удалить" 
+                                     Command="{Binding DataContext.DeleteTicketCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                     CommandParameter="{Binding}"
+                                     Background="#D32F2F" Foreground="White" Margin="2" Padding="5"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+        
+    </Grid>
+</UserControl>

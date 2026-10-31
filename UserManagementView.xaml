@@ -1,0 +1,75 @@
+﻿<UserControl x:Class="HelpDeskWpf.UserManagementView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:HelpDeskWpf"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <Style TargetType="PasswordBox">
+            <Setter Property="Background" Value="#2D2D30"/>
+            <Setter Property="Foreground" Value="#E0E0E0"/>
+            <Setter Property="BorderBrush" Value="#3E3E42"/>
+            <Setter Property="Padding" Value="5"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+    </UserControl.Resources>
+    <Grid Margin="10" Background="#1E1E1E">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <!-- Таблица с привязкой к Users -->
+        <DataGrid Grid.Row="0"  
+                  AutoGenerateColumns="False" 
+                  IsReadOnly="True" 
+                  RowHeaderWidth="0" 
+                  ItemsSource="{Binding Users}"
+                  Background="#1E1E1E"
+                  Foreground="#E0E0E0"
+                  RowBackground="#1E1E1E"
+                  AlternatingRowBackground="#252526"
+                  HorizontalGridLinesBrush="#3E3E42"
+                  VerticalGridLinesBrush="#3E3E42"
+                  BorderBrush="#3E3E42">    
+            
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Логин" Binding="{Binding Login}" Width="*"/>
+                <DataGridTextColumn Header="ФИО" Binding="{Binding Fullname}" Width="*"/>
+                <DataGridTextColumn Header="Роль" Binding="{Binding Role.Name}" Width="150"/>
+
+                <DataGridTemplateColumn Header="Действия" Width="100">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <!-- Привязываем кнопку к команде удаления -->
+                            <Button Content="Удалить" 
+                                 Command="{Binding DataContext.DeleteUserCommand, 
+                                 RelativeSource={RelativeSource AncestorType=Window}}"
+                                 CommandParameter="{Binding}"
+                                 Background="#d32f2f"
+                                 Foreground="White"
+                                 Margin="2"
+                                 Padding="5"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+            </DataGrid.Columns>
+        </DataGrid>
+        <!-- Панель добавления -->
+        <StackPanel Grid.Row="1" 
+                    Orientation="Horizontal" 
+                    Margin="0,10,0,0">
+            <TextBlock Text="Логин:" VerticalAlignment="Center" Foreground="#E0E0E0"/>
+            <TextBox Text="{Binding NewLogin, UpdateSourceTrigger=PropertyChanged}" Width="100" Margin="5"/>
+            <TextBlock Text="Пароль:" VerticalAlignment="Center" Foreground="#E0E0E0"/>
+            <!-- Пароль передаем через код -->
+            <PasswordBox Name="txtNewPassword" Width="100" Margin="5"/>
+            <TextBlock Text="ФИО:" VerticalAlignment="Center" Foreground="#E0E0E0"/>
+            <TextBox Text="{Binding NewFullName, UpdateSourceTrigger=PropertyChanged}" Width="150" Margin="5"/>
+            <!-- Кнопка добавления вызывает событие Click -->
+            <Button Content="Добавить" Click="BtnAddUser_Click" Margin="5" Background="#0078D7" Foreground="White"/>
+        </StackPanel>
+    </Grid>
+</UserControl>
